@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -53,8 +54,95 @@ class ProductDetailUseCaseTest {
         StepVerifier.create(useCase.detailProduct(id))
                 .expectError(RuntimeException.class);
 
-        //Assertions.assertThrows(RuntimeException.class, () -> useCase.detailProduct(id));
-
     }
 
+    @Test
+    void shouldCreateProductSuccess() {
+        Product product = Product.builder()
+                .price(100F)
+                .description("Mi producto")
+                .urlPicture("no-url.com")
+                .name("Producto")
+                .build();
+
+        Product savedProduct = Product.builder()
+                .id(123)
+                .price(100F)
+                .description("Mi producto")
+                .urlPicture("no-url.com")
+                .name("Producto")
+                .build();
+
+        when(productRepository.saveProduct(product))
+                .thenReturn(Mono.just(savedProduct));
+
+        StepVerifier.create(useCase.saveProduct(product))
+                .expectNextMatches(p -> Objects.equals(p.getId(), 123))
+                .expectComplete();
+    }
+
+    @Test
+    void shouldDeleteProductSuccess() {
+        Integer id = 123;
+        Product savedProduct = Product.builder()
+                .id(id)
+                .price(100F)
+                .description("Mi producto")
+                .urlPicture("no-url.com")
+                .name("Producto")
+                .build();
+
+        when(productRepository.deleteProduct(id))
+                .thenReturn(Mono.just(savedProduct));
+
+        StepVerifier.create(useCase.deleteProduct(id))
+                .expectNextMatches(p -> Objects.equals(p.getId(), id))
+                .expectComplete();
+    }
+
+    @Test
+    void shouldDeleteProductError() {
+        Integer id = 10;
+
+        when(productRepository.deleteProduct(id))
+                .thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.deleteProduct(id))
+                .expectError(RuntimeException.class);
+    }
+
+    @Test
+    void shouldUpdateProductSuccess() {
+        Product product = Product.builder()
+                .id(123)
+                .price(100F)
+                .description("Mi producto")
+                .urlPicture("no-url.com")
+                .name("Producto")
+                .build();
+
+        when(productRepository.updateProduct(product))
+                .thenReturn(Mono.just(product));
+
+        StepVerifier.create(useCase.updateProduct(product))
+                .expectNextMatches(p -> Objects.equals(p.getPrice(), product.getPrice()))
+                .expectComplete();
+    }
+
+    @Test
+    void shouldUpdateProductErrorProductNotFound() {
+        Product product = Product.builder()
+                .id(123)
+                .price(100F)
+                .description("Mi producto")
+                .urlPicture("no-url.com")
+                .name("Producto")
+                .build();
+
+        when(productRepository.updateProduct(product))
+                .thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.updateProduct(product))
+                .expectError(RuntimeException.class);
+    }
 }

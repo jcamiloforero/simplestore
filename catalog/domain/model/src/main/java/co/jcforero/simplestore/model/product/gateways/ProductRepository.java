@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository {
-    void saveProduct(Mono<Product> product);
+    Mono<Product> saveProduct(Product product);
     Flux<Product> getProducts();
     Mono<Product> getProductById(Integer id);
     Mono<Product> updateProduct(Product product);
-    void deleteProduct(Product product);
+    Mono<Product> deleteProduct(Integer id);
 }
