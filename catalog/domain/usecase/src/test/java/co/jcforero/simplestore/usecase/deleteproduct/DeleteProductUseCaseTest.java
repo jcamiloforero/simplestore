@@ -1,4 +1,4 @@
-package co.jcforero.simplestore.usecase.productdetail;
+package co.jcforero.simplestore.usecase.deleteproduct;
 
 import co.jcforero.simplestore.model.product.Product;
 import co.jcforero.simplestore.model.product.gateways.ProductRepository;
@@ -15,41 +15,40 @@ import java.util.Objects;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProductDetailUseCaseTest {
-
+class DeleteProductUseCaseTest {
     @Mock
     private ProductRepository productRepository;
 
     @InjectMocks
-    private ProductDetailUseCase useCase;
+    private DeleteProductUseCase useCase;
 
     @Test
-    void shouldReturnProductCorrectly() {
-        Integer id = 10;
-
-        Product product = Product.builder()
-                .id(10)
-                .name("Hoja")
-                .description("Una hoja en blanco")
-                .price(1000F)
+    void shouldDeleteProductSuccess() {
+        Integer id = 123;
+        Product savedProduct = Product.builder()
+                .id(id)
+                .price(100F)
+                .description("Mi producto")
+                .urlPicture("no-url.com")
+                .name("Producto")
                 .build();
-        when(productRepository.getProductById(id))
-                .thenReturn(Mono.just(product));
 
-        StepVerifier.create(useCase.detailProduct(id))
+        when(productRepository.deleteProduct(id))
+                .thenReturn(Mono.just(savedProduct));
+
+        StepVerifier.create(useCase.deleteProduct(id))
                 .expectNextMatches(p -> Objects.equals(p.getId(), id))
                 .expectComplete();
     }
 
     @Test
-    void shouldReturnProductNotFound() {
+    void shouldDeleteProductError() {
         Integer id = 10;
 
-        when(productRepository.getProductById(id))
+        when(productRepository.deleteProduct(id))
                 .thenReturn(Mono.empty());
 
-        StepVerifier.create(useCase.detailProduct(id))
+        StepVerifier.create(useCase.deleteProduct(id))
                 .expectError(RuntimeException.class);
-
     }
 }
